@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.24)
+cmake_minimum_required(VERSION 3.16)
 
 # Set C++ compiler flags before `project`
 set(CMAKE_CXX_STANDARD 17)
@@ -26,12 +26,18 @@ list(APPEND CONVERTER_INCLUDES
     ${tinyply_SOURCE_DIR}/source
 )
 
-# Set the linking libraries.
-list(APPEND CONVERTER_LIBRARIES
-    tinyply
-)
+# Include directories for laszip
+include_directories("/home/mazeyar/miniconda3/envs/lod-3dgs/include")
+link_directories("/home/mazeyar/miniconda3/envs/lod-3dgs/lib")
 
-link_directories("${CMAKE_CURRENT_SOURCE_DIR}/libs/laszip")
+# Find and link the Laszip library
+find_library(LASZIP_LIB NAMES laszip PATHS "/home/mazeyar/miniconda3/envs/lod-3dgs/lib")
+
+if(LASZIP_LIB)
+    message(STATUS "Laszip library found at ${LASZIP_LIB}")
+else()
+    message(FATAL_ERROR "Laszip library not found!")
+endif()
 
 # Set the source files.
 aux_source_directory(src SRC_FILES)
@@ -39,7 +45,19 @@ aux_source_directory(modules/LasLoader SRC_FILES)
 aux_source_directory(modules/tools SRC_FILES)
 aux_source_directory(modules/unsuck SRC_FILES)
 
+# Add the executable target
 add_executable(${PROJECT_NAME} ${SRC_FILES})
-target_include_directories(${PROJECT_NAME} PRIVATE ${CONVERTER_INCLUDES})
-target_link_libraries(${PROJECT_NAME} PUBLIC ${CONVERTER_LIBRARIES} laszip3 ${PCL_LIBRARIES})
 
+# Link include directories
+target_include_directories(${PROJECT_NAME} PRIVATE ${CONVERTER_INCLUDES})
+
+# Set the linking libraries.
+list(APPEND CONVERTER_LIBRARIES
+    tinyply
+    ${PCL_LIBRARIES}  # Assuming PCL is also used
+    pthread
+    ${LASZIP_LIB}     # Link against the found Laszip library
+)
+
+# Link against libraries
+target_link_libraries(${PROJECT_NAME} PRIVATE ${CONVERTER_LIBRARIES})

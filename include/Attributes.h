@@ -167,11 +167,12 @@ struct Attributes {
 	}
 
 	Attribute* get(string name) {
-		for (auto& attribute : list) {
-			if (attribute.name == name) {
-				return &attribute;
-			}
-		}
+    for (auto& attribute : list) {
+        if (attribute.name == name) {
+            return &attribute;
+        }
+    }
+    throw std::runtime_error("Attribute not found: " + name);
 	}
 
 };

@@ -259,9 +259,9 @@ void Indexer::doSampling(shared_ptr<Node> node, int64_t dbgShouldWriteBytes) {
 			int64_t y = double(gridSize) * ny;
 			int64_t z = double(gridSize) * nz;
 
-			x = std::max(0ll, std::min(x, gridSize - 1));
-			y = std::max(0ll, std::min(y, gridSize - 1));
-			z = std::max(0ll, std::min(z, gridSize - 1));
+			x = std::max(0ll, static_cast<long long>(std::min(x, gridSize - 1)));
+			y = std::max(0ll, static_cast<long long>(std::min(y, gridSize - 1)));
+			z = std::max(0ll, static_cast<long long>(std::min(z, gridSize - 1)));
 
 			int64_t index = x + y * gridSize + z * gridSize * gridSize;
 
@@ -615,24 +615,21 @@ void buildHierarchy(Indexer* indexer, Node* node, shared_ptr<Buffer> points, int
 	auto offset = attributes.posOffset;
 
 	auto gridIndexOf = [&points, bpp, scale, offset, min, size, counterGridSize](int64_t pointIndex) {
-
 		int64_t pointOffset = pointIndex * bpp;
 		int32_t* xyz = reinterpret_cast<int32_t*>(points->data_u8 + pointOffset);
-
 		double x = (xyz[0] * scale.x) + offset.x;
 		double y = (xyz[1] * scale.y) + offset.y;
 		double z = (xyz[2] * scale.z) + offset.z;
-
 		int64_t ix = double(counterGridSize) * (x - min.x) / size.x;
 		int64_t iy = double(counterGridSize) * (y - min.y) / size.y;
 		int64_t iz = double(counterGridSize) * (z - min.z) / size.z;
-
-		ix = std::max(0ll, std::min(ix, counterGridSize - 1));
-		iy = std::max(0ll, std::min(iy, counterGridSize - 1));
-		iz = std::max(0ll, std::min(iz, counterGridSize - 1));
-
+		
+		// Modified lines:
+		ix = std::max(0ll, static_cast<long long>(std::min(ix, counterGridSize - 1)));
+		iy = std::max(0ll, static_cast<long long>(std::min(iy, counterGridSize - 1)));
+		iz = std::max(0ll, static_cast<long long>(std::min(iz, counterGridSize - 1)));
+		
 		int64_t index = mortonEncode_magicbits(iz, iy, ix);
-
 		return index;
 	};
 

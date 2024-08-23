@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include <condition_variable>
 #include <string>
 #include <filesystem>
 #include <algorithm>
